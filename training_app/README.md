@@ -26,6 +26,6 @@ Aby wygenerować nowe dane, należy najpierw usunąć wszystkie istniejące tren
 
 Następnie należy uruchomić poniższą komende w katalogu głównym projektu
 
-Autorzy projektu: Wojciech Damian, Mateusz Goc
-
 python manage.py generate_data
+
+Autorzy projektu: Wojciech Damian, Mateusz Goc
