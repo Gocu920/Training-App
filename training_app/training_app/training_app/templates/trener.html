@@ -1,0 +1,136 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Treningi zawodników{% endblock %}
+
+{% block content %}
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+    }
+    .btn-icon.active {
+    background-color: #ffffff; 
+    color: rgb(220, 117, 33);
+    }
+    .space {
+        margin-bottom: 60px;
+    }
+    .space_v2 {
+        margin-bottom: 10px;
+    }
+    .space_v3 {
+        margin-bottom: 100px;
+    }
+    .max-heart-rate, .avg-heart-rate {
+        font-size: 1.2em; 
+    }
+
+</style>
+<div class="container mt-5">
+    <h2>Treningi Twoich zawodników</h2>
+</div>
+<div class="card" style="flex: 1; margin-right: 10px;">
+    <div class="card-body">
+    <form method="GET">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="date_from" class="form-label">Od daty</label>
+                <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+            </div>
+            <div class="col-md-4">
+                <label for="date_to" class="form-label">Do daty</label>
+                <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+            </div>
+            <!-- <div class="col-md-4">
+                <label for="training_type_filter" class="form-label">Rodzaj treningu</label>
+                <select class="form-control" id="training_type_filter" name="training_type_filter">
+                    <option value="">Wybierz rodzaj treningu</option>
+                    {% for training_type in available_training_types %}
+                        <option value="{{ training_type.id }}" {% if training_type.id == training_type_filter %} selected {% endif %}>
+                            {{ training_type.get_training_type_display }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div> -->
+            <div class="col-md-4">
+                <label for="competitor_filter" class="form-label">Zawodnik</label>
+                <select class="form-control" id="competitor_filter" name="competitor_filter">
+                    <option value="">Wybierz zawodnika</option>
+                    {% for competitor in available_competitors %}
+                        <option value="{{ competitor.id }}" {% if competitor.id == competitor_filter %} selected {% endif %}>
+                            {{ competitor.get_full_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <p class="space_v2"></p>
+        <button type="submit" class="btn btn-primary">Filtruj</button>
+        <p class="space"></p>
+    </form>
+    <div class="card" style="flex: 1; margin-right: 10px;">
+        <div class="card-body">
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Rodzaj treningu</th>
+                        <th>Opis</th>
+                        <th>Link do GPX</th>
+                        <th>Odczucia zawodnika</th>
+                        <th>Zawodnik</th>
+                        <th>Komentarz trenera</th>
+                        <th>Akcje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for training in trainings %}
+                    <tr>
+                        <td>{{ training.date }}</td>
+                        <td>{{ training.training_type.get_training_type_display }}</td>
+                        <td>{{ training.training_description }}</td>
+                        <td>
+                            {% if training.gpx_url %}
+                            <a href="{{ training.gpx_url }}" target="_blank">Link</a>
+                            {% else %}
+                            Brak
+                            {% endif %}
+                        </td>
+                        <td>{{ training.feeling }}</td>
+                        <td>{{ training.competitor.get_full_name }}</td>
+                        <td>{{ training.coach_comment }}</td>
+                        <td>
+                            <a href="{% url 'trener_training_detail' training.id %}" class="btn btn-info mt-2">Pokaż wykresy</a>
+                            <a href="{% url 'trener_training_detail' training.id %}" class="btn btn-primary mt-2">Skomentuj</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <p class="space_v2"></p>
+    <a href="?download_csv=1&date_from={{ date_from }}&date_to={{ date_to }}&training_type_filter={{ training_type_filter }}&competitor_filter={{ competitor_filter }}" class="btn btn-primary">Pobierz raport CSV</a>
+    <p class="space_1"></p>
+    <!-- Paginacja -->
+    <div class="d-flex justify-content-center">
+        <ul class="pagination">
+            {% if trainings.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1">&laquo; pierwsza</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ trainings.previous_page_number }}">poprzednia</a></li>
+            {% endif %}
+
+            <li class="page-item"><span class="page-link">Strona {{ trainings.number }} z {{ trainings.paginator.num_pages }}.</span></li>
+
+            {% if trainings.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ trainings.next_page_number }}">następna</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ trainings.paginator.num_pages }}">ostatnia &raquo;</a></li>
+            {% endif %}
+        </ul>
+        <p class="space_v3"></p>
+    </div>
+    </div>
+</div>
+{% endblock %}

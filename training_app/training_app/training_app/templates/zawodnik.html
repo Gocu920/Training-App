@@ -1,0 +1,276 @@
+{% extends "base_generic.html" %}
+{% load form_filters %}
+
+{% block title %}Panel zawodnika{% endblock %}
+
+{% block content %}
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+    }
+    .btn-icon.active {
+    background-color: #ffffff; 
+    color: rgb(51, 167, 255);
+    }
+    .space {
+        margin-bottom: 60px;
+    }
+    .space_v2 {
+        margin-bottom: 10px;
+    }
+    .max-heart-rate, .avg-heart-rate {
+        font-size: 1.2em; 
+        font-weight: bold;
+    }
+    .card-custom {
+        width: 90%; 
+        margin: 0 auto; 
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    }
+
+</style>
+    <div class="container mt-5">
+        <h2>Twoje treningi {{competitor.get_full_name }}</h2>
+        </div>
+        <div class="card" style="flex: 1; margin-right: 10px;">
+            <div class="card-body">
+            <form method="GET">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="date_from" class="form-label">Od daty</label>
+                        <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="date_to" class="form-label">Do daty</label>
+                        <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="training_type_filter" class="form-label">Rodzaj treningu</label>
+                        <select class="form-control" id="training_type_filter" name="training_type_filter">
+                            <option value="">Wybierz rodzaj treningu</option>
+                            {% for training_type in available_training_types %}
+                                <option value="{{ training_type.id }}" {% if training_type.id == training_type_filter %} selected {% endif %}>
+                                    {{ training_type.get_training_type_display }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Filtruj</button>
+            </form>
+        </div>
+    </div>
+    <p class="space"></p>
+    <div class="card" style="flex: 1; margin-right: 10px;">
+        <div class="card-body">
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Rodzaj treningu</th>
+                    <th>Opis</th>
+                    <th>Link do GPX</th>
+                    <th>Odczucia</th>
+                    <th>Trener</th>
+                    <th>Komentarz trenera</th>
+                </tr>
+            </thead>
+                    <tbody>
+                        {% for training in athlete_trainings %}
+                        <tr>
+                            <td>{{ training.date }}</td>
+                            <td>{{ training.training_type.get_training_type_display}}</td>
+                            <td>{{ training.training_description }}</td>
+                            <td>
+                                {% if training.gpx_url %}
+                                <a href="{{ training.gpx_url }}" target="_blank">Link</a>
+                                {% else %}
+                                Brak
+                                {% endif %}
+                            </td>
+                            <td>{{ training.feeling }}</td>
+                            <td>
+                                {% if training.coach %}
+                                {{ training.coach.get_full_name }}
+                                {% else %}
+                                Brak
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if training.coach_comment %}
+                                {{ training.coach_comment }}
+                                {% else %}
+                                Brak
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <a href="?download_csv=1&date_from={{ date_from }}&date_to={{ date_to }}&training_type_filter={{ training_type_filter }}" class="btn btn-primary">Pobierz raport CSV</a>
+            </div>
+        </div>
+        <p class="space_v2"></p>
+        <!-- Paginacja -->
+        <div class="d-flex justify-content-center">
+            <ul class="pagination">
+                {% if athlete_trainings.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page=1&date_from={{ date_from }}&date_to={{ date_to }}&training_type_filter={{ training_type_filter }}">&laquo; pierwsza</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ athlete_trainings.previous_page_number }}&date_from={{ date_from }}&date_to={{ date_to }}&training_type_filter={{ training_type_filter }}">poprzednia</a></li>
+                {% endif %}
+
+                <li class="page-item"><span class="page-link">Strona {{ athlete_trainings.number }} z {{ athlete_trainings.paginator.num_pages }}.</span></li>
+
+                {% if athlete_trainings.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ athlete_trainings.next_page_number }}&date_from={{ date_from }}&date_to={{ date_to }}&training_type_filter={{ training_type_filter }}">następna</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ athlete_trainings.paginator.num_pages }}&date_from={{ date_from }}&date_to={{ date_to }}&training_type_filter={{ training_type_filter }}">ostatnia &raquo;</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% if script_line and div_line %}
+<p class="space"></p>
+<div class="card-custom" style="flex: 1; margin-right: 10px;">
+    <div class="card-body">
+        <div class="text-center">
+            <h2>Statystyki dotyczące treningu</h2>
+        </div>
+        <div class="container mt-5">
+            <div class="row">
+                <div class="col-md-8">
+                    {{ div_line|safe }}
+                    {{ script_line|safe }}
+                </div>
+                <div class="col-md-4">
+                    <div class="zone-plot">
+                        {{ div_bar|safe }}
+                        {{ script_bar|safe }}
+                    </div>
+                    <p class="space"></p>
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="col-md-6">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Rzeczywiste maksymalne tętno podczas badania</h5>
+                            <p class="card-text max-heart-rate">{{ actual_max_hr }} bpm</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Średnie tętno</h5>
+                            <p class="card-text avg-heart-rate">{{ avg_hr }} bpm</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="space"></p>
+            <p class="space"></p>
+        </div>
+    </div>
+</div>
+        {% endif %}
+    </div>
+</div>
+<p class="space_v2"></p>
+<form method="post" class="container mt-5" style="max-width: 800px;">
+    {% csrf_token %}
+    <!-- Twoje pola formularza -->
+    <div class="form-group mb-4">
+        <label for="gpx_url">Wprowadź link do pliku z danymi treningowymi:</label>
+        <div class="input-group">
+            <input type="url" class="form-control" id="gpx_url" name="gpx_url" placeholder="https://example.com/your_gpx_file.gpx" value="{{ gpx_url }}" required>
+            <button type="submit" name="action" value="load" class="btn btn-secondary">Załaduj</button>
+        </div>
+        <div class="form-text text-muted">Wprowadź pełny URL do pliku GPX.</div> <!-- Dodanie helptext -->
+    </div>
+    <p class="space"></p>
+    <div class="row mb-4 align-items-center">
+        <div class="col-12">
+            <label class="form-label" for="form2Example1">Wprowadź datę treningu:</label>
+            <input type="date" id="form2Example1" class="form-control" name="training_date" value="{{ date }}" />
+        </div>
+    </div>    
+    <div class="form-group mb-4">
+        <label for="coach">Wybierz trenera:</label>
+        <select class="form-control" id="coach" name="coach">
+            <option value=>{{coach.get_full_name}}</option>
+            {% for coach in available_coaches %}
+            <option value="{{ coach.id }}" {% if coach.id == coach %} selected {% endif %}>{{ coach.get_full_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group mb-4">
+        <label for="exampleFormControlTextarea1">Komentarz dotyczący treningu:</label>
+        <textarea class="form-control" id="exampleFormControlTextarea1" rows="6" style="width: 100%;" name="training_comment">{{ comment }}</textarea>
+    </div>
+    <div class="form-group mb-4">
+        <label for="training_type">Wybierz rodzaj treningu biegowego:</label>
+        <select class="form-control" id="training_type" name="training_type">
+            <option value=>{{training_type}}</option>
+            {% for type in available_training_types %}
+            <option value="{{ type.id }}" {% if type.id == training_type %} selected {% endif %}>{{ type.get_training_type_display }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group mb-4">
+        <label>Oceń odczucia po treningu:</label>
+        <div class="card" style="flex: 1; margin-right: 10px;">
+            <div class="card-body">
+                <div class="d-flex flex-wrap">
+                    <button type="button" class="btn-icon" onclick="setFeeling(1, this)" {% if feeling_number == '1' %}class="active"{% endif %}>
+                        <i class="bi bi-1-square icon-50px"></i>
+                    </button>
+                    <button type="button" class="btn-icon" onclick="setFeeling(2, this)" {% if feeling_number == '2' %}class="active"{% endif %}>
+                        <i class="bi bi-2-square icon-50px"></i>
+                    </button>
+                    <button type="button" class="btn-icon" onclick="setFeeling(3, this)" {% if feeling_number == '3' %}class="active"{% endif %}>
+                        <i class="bi bi-3-square icon-50px"></i>
+                    </button>
+                    <button type="button" class="btn-icon" onclick="setFeeling(4, this)" {% if feeling_number == '4' %}class="active"{% endif %}>
+                        <i class="bi bi-4-square icon-50px"></i>
+                    </button>
+                    <button type="button" class="btn-icon" onclick="setFeeling(5, this)" {% if feeling_number == '5' %}class="active"{% endif %}>
+                        <i class="bi bi-5-square icon-50px"></i>
+                    </button>
+                    <button type="button" class="btn-icon" onclick="setFeeling(6, this)" {% if feeling_number == '6' %}class="active"{% endif %}>
+                        <i class="bi bi-6-square icon-50px"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+                <input type="hidden" id="feeling_number" name="feeling_number" value="{{ feeling_number }}">
+            </div>
+            <div class="text-center">
+                <button type="submit" name="action" value="save" class="btn btn-primary btn-block mb-3">Zapisz trening</button>
+                <p class="space"></p>
+            </div>
+        </form>
+
+
+    <script>
+        function setFeeling(number, button) {
+            document.getElementById('feeling_number').value = number;
+
+            // usuwanie klasy 'active' ze wszystkich przycisków
+            var buttons = document.querySelectorAll('.btn-icon');
+            buttons.forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+
+            // dodanie klasy 'active' do klikniętego przycisku
+            button.classList.add('active');
+        }
+    </script>
+
+{% for js in cdn_js %}
+<script src="{{ js }}"></script>
+{% endfor %}
+{% endblock %}

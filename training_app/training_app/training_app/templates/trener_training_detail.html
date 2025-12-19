@@ -1,0 +1,80 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Szczegóły Treningu{% endblock %}
+
+{% block content %}
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+    }
+    .max-heart-rate, .avg-heart-rate {
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+    .card-custom {
+        width: 90%; /* Szerokość karty ustawiona na 90% */
+        margin: 0 auto; /* Centrowanie karty */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Dodanie cienia */
+    }
+    .comment-section {
+        margin-top: 30px;
+    }
+</style>
+<div class="text-center mt-5">
+    <h2>Statystyki dotyczące treningu</h2>
+</div>
+<div>
+    <a href="{% url 'trener' %}" class="btn btn-primary">Wróć</a>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card card-custom mt-4">
+                <div class="card-body">
+                    {{ div_line|safe }}
+                    {{ script_line|safe }}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="zone-plot">
+                <div class="card card-custom mt-4">
+                    <div class="card-body">
+                        {{ div_bar|safe }}
+                        {{ script_bar|safe }}
+                    </div>
+                </div>
+            </div>
+            <p class="space"></p>
+        </div>
+    </div>
+    <div class="card card-custom mt-4">
+        <div class="card-body">
+                <div class="max-heart-rate">Rzeczywiste maksymalne tętno podczas badania: {{ actual_max_hr }} bpm</div>
+                <div class="avg-heart-rate">Średnie tętno: {{ avg_hr }} bpm</div>
+        </div>
+    </div>
+</div>
+<div class="card card-custom comment-section">
+    <div class="card-body">
+        <h3>Dodaj komentarz</h3>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="coach_comment">Komentarz trenera:</label>
+                <textarea class="form-control" id="coach_comment" name="coach_comment" rows="4">{{ training.coach_comment }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Dodaj komentarz</button>
+        </form>
+    </div> 
+<p class="space"></p>
+<p class="space"></p>
+</div>
+<p class="space"></p>
+{% for js in cdn_js %}
+<script src="{{ js }}"></script>
+{% endfor %}
+{% endblock %}
